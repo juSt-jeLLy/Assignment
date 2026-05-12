@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -8,21 +8,42 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+import { useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import type { FeedbackRecord } from "@/features/feedback";
 import { useFeedbackRecords } from "@/features/feedback";
 import { ExportCsvButton } from "@/features/shared/export";
 import { FilterSelect, PageHeader } from "@/features/shared/components";
 import { Skeleton } from "@/components/dashboard/Skeleton";
+import {
+  useGlobalSearch,
+  useSetGlobalSearch,
+  useDepartmentFilter,
+  useSetDepartment,
+  useSentimentFilter,
+  useSetSentiment,
+  useRatingFilter,
+  useSetRating,
+  useResetFilters,
+} from "@/store";
 
 /** Renders searchable, filterable, sortable, paginated feedback table. */
 export function FeedbackTableView(): React.JSX.Element {
   const { data, isLoading, isError } = useFeedbackRecords();
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalSearch, setGlobalSearch] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("All");
-  const [sentimentFilter, setSentimentFilter] = useState("All");
-  const [ratingFilter, setRatingFilter] = useState("All");
+
+  // ── Zustand filters — shared globally, survive navigation ────────────
+  const globalSearch = useGlobalSearch();
+  const setGlobalSearch = useSetGlobalSearch();
+  const department = useDepartmentFilter();
+  const setDepartment = useSetDepartment();
+  const sentiment = useSentimentFilter();
+  const setSentiment = useSetSentiment();
+  const rating = useRatingFilter();
+  const setRating = useSetRating();
+  const resetFilters = useResetFilters();
+  // ─────────────────────────────────────────────────────────────────────
+
   const safeData = data ?? [];
 
   const columns = useMemo<ColumnDef<FeedbackRecord>[]>(
@@ -45,9 +66,9 @@ export function FeedbackTableView(): React.JSX.Element {
   const filteredData = useMemo(
     () =>
       safeData
-        .filter((row) => (departmentFilter === "All" ? true : row.department === departmentFilter))
-        .filter((row) => (sentimentFilter === "All" ? true : row.sentiment === sentimentFilter))
-        .filter((row) => (ratingFilter === "All" ? true : row.rating === Number(ratingFilter)))
+        .filter((row) => (department === "All" ? true : row.department === department))
+        .filter((row) => (sentiment === "All" ? true : row.sentiment === sentiment))
+        .filter((row) => (rating === "All" ? true : row.rating === Number(rating)))
         .filter((row) => {
           if (globalSearch.trim() === "") return true;
           const q = globalSearch.toLowerCase();
@@ -58,7 +79,7 @@ export function FeedbackTableView(): React.JSX.Element {
             row.feedback.toLowerCase().includes(q)
           );
         }),
-    [safeData, departmentFilter, sentimentFilter, ratingFilter, globalSearch],
+    [safeData, department, sentiment, rating, globalSearch],
   );
 
   const table = useReactTable({
@@ -100,30 +121,43 @@ export function FeedbackTableView(): React.JSX.Element {
           <span className="text-ui-label text-xs font-semibold tracking-wide">Global Search</span>
           <input
             value={globalSearch}
-            onChange={(event) => setGlobalSearch(event.target.value)}
+            onChange={(e) => setGlobalSearch(e.target.value)}
             className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-            placeholder="Global search"
+            placeholder="Search by name, doctor, department…"
           />
         </label>
         <FilterSelect
           label="Department"
           options={departments}
-          value={departmentFilter}
-          onChange={setDepartmentFilter}
+          value={department}
+          onChange={setDepartment}
         />
         <FilterSelect
           label="Sentiment"
           options={["All", "Positive", "Neutral", "Negative"]}
-          value={sentimentFilter}
-          onChange={setSentimentFilter}
+          value={sentiment}
+          onChange={(v) => setSentiment(v as typeof sentiment)}
         />
         <FilterSelect
           label="Rating"
           options={["All", "1", "2", "3", "4", "5"]}
-          value={ratingFilter}
-          onChange={setRatingFilter}
+          value={rating}
+          onChange={(v) => setRating(v as typeof rating)}
         />
       </section>
+
+      {/* Active filter indicator + reset */}
+      {(department !== "All" || sentiment !== "All" || rating !== "All" || globalSearch) && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>Filters active —</span>
+          <button
+            onClick={resetFilters}
+            className="text-primary underline-offset-2 hover:underline"
+          >
+            Reset all
+          </button>
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-card">
         <table className="min-w-full text-sm">
@@ -170,7 +204,8 @@ export function FeedbackTableView(): React.JSX.Element {
 
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()} —{" "}
+          {filteredData.length} results
         </p>
         <div className="flex gap-2">
           <button

@@ -1,7 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Bell, Check, Monitor, Moon, Palette, Sun, User } from "lucide-react";
+import { Bell, Check, Monitor, Moon, Palette, Sun } from "lucide-react";
 import { useTheme, type Theme } from "@/features/theme/ThemeProvider";
+import {
+  useNotifyNewComplaints,
+  useNotifyLowRatings,
+  useNotifyWeeklyDigest,
+  useNotifyMilestones,
+  useSetNotifyNewComplaints,
+  useSetNotifyLowRatings,
+  useSetNotifyWeeklyDigest,
+  useSetNotifyMilestones,
+} from "@/store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/settings")({
@@ -33,8 +43,20 @@ const THEME_OPTIONS: ThemeOption[] = [
 function SettingsPage() {
   const { theme, setTheme } = useTheme();
 
+  // ── Zustand — preferences persist across navigation & page refresh ───
+  const notifyNewComplaints = useNotifyNewComplaints();
+  const notifyLowRatings = useNotifyLowRatings();
+  const notifyWeeklyDigest = useNotifyWeeklyDigest();
+  const notifyMilestones = useNotifyMilestones();
+  const setNotifyNewComplaints = useSetNotifyNewComplaints();
+  const setNotifyLowRatings = useSetNotifyLowRatings();
+  const setNotifyWeeklyDigest = useSetNotifyWeeklyDigest();
+  const setNotifyMilestones = useSetNotifyMilestones();
+  // ─────────────────────────────────────────────────────────────────────
+
   return (
     <div className="space-y-6">
+      {/* Appearance */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -84,29 +106,11 @@ function SettingsPage() {
         </div>
       </motion.div>
 
+      {/* Notifications */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="rounded-2xl border border-border bg-card p-6 shadow-card"
-      >
-        <SectionHeader
-          icon={User}
-          title="Profile"
-          description="Account information used across the dashboard."
-        />
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <Field label="Display name" defaultValue="Hospital Admin" />
-          <Field label="Email" defaultValue="admin@pulsecare.io" />
-          <Field label="Role" defaultValue="Administrator" disabled />
-          <Field label="Department" defaultValue="Operations" />
-        </div>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
         className="rounded-2xl border border-border bg-card p-6 shadow-card"
       >
         <SectionHeader
@@ -115,10 +119,26 @@ function SettingsPage() {
           description="Choose what you want to be alerted about."
         />
         <div className="mt-5 space-y-3">
-          <Toggle label="New complaint alerts" defaultChecked />
-          <Toggle label="Critically low ratings" defaultChecked />
-          <Toggle label="Weekly digest email" />
-          <Toggle label="Department milestone updates" defaultChecked />
+          <Toggle
+            label="New complaint alerts"
+            checked={notifyNewComplaints}
+            onChange={setNotifyNewComplaints}
+          />
+          <Toggle
+            label="Critically low ratings"
+            checked={notifyLowRatings}
+            onChange={setNotifyLowRatings}
+          />
+          <Toggle
+            label="Weekly digest email"
+            checked={notifyWeeklyDigest}
+            onChange={setNotifyWeeklyDigest}
+          />
+          <Toggle
+            label="Department milestone updates"
+            checked={notifyMilestones}
+            onChange={setNotifyMilestones}
+          />
         </div>
       </motion.div>
     </div>
@@ -147,33 +167,25 @@ function SectionHeader({
   );
 }
 
-function Field({
+function Toggle({
   label,
-  defaultValue,
-  disabled,
+  checked,
+  onChange,
 }: {
   label: string;
-  defaultValue: string;
-  disabled?: boolean;
+  checked: boolean;
+  onChange: (value: boolean) => void;
 }) {
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-muted-foreground">{label}</span>
-      <input
-        defaultValue={defaultValue}
-        disabled={disabled}
-        className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
-      />
-    </label>
-  );
-}
-
-function Toggle({ label, defaultChecked = false }: { label: string; defaultChecked?: boolean }) {
-  return (
-    <label className="flex items-center justify-between rounded-xl border border-border p-3 text-sm">
+    <label className="flex items-center justify-between rounded-xl border border-border p-3 text-sm cursor-pointer">
       <span>{label}</span>
       <span className="relative">
-        <input type="checkbox" defaultChecked={defaultChecked} className="peer sr-only" />
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="peer sr-only"
+        />
         <span className="block h-6 w-11 rounded-full bg-muted transition-smooth peer-checked:bg-gradient-primary" />
         <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-smooth peer-checked:translate-x-5" />
       </span>
