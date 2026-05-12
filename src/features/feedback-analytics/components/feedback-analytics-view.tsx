@@ -1,6 +1,7 @@
 import {
   Bar,
   BarChart,
+  Brush,
   CartesianGrid,
   Cell,
   Legend,
@@ -45,6 +46,7 @@ export function FeedbackAnalyticsView(): React.JSX.Element {
     );
 
   const daily = computeDailyTrend(data);
+  const defaultDailyStartIndex = Math.max(0, daily.length - 30);
   const monthly = computeMonthlyTrend(data);
   const ratings = computeRatingDistribution(data);
   const sentiment = computeSentimentDistribution(data);
@@ -68,18 +70,26 @@ export function FeedbackAnalyticsView(): React.JSX.Element {
             <ExportCsvButton fileName="feedback-daily-trend.csv" rows={daily} />
           </div>
           <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={daily}>
+            <LineChart data={daily} margin={{ top: 8, right: 8, left: 0, bottom: 34 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="label"
-                tick={{ fontSize: 11 }}
-                label={{ value: "Date", position: "insideBottom", offset: -2 }}
-              />
+              <XAxis dataKey="label" tick={{ fontSize: 11 }} />
               <YAxis label={{ value: "Feedback Count", angle: -90, position: "insideLeft" }} />
               <Tooltip />
               <Line type="monotone" dataKey="count" stroke="#0369a1" strokeWidth={2} />
               <Line type="monotone" dataKey="positive" stroke="#16a34a" />
               <Line type="monotone" dataKey="negative" stroke="#dc2626" />
+              {daily.length > 1 && (
+                <Brush
+                  dataKey="label"
+                  height={20}
+                  startIndex={defaultDailyStartIndex}
+                  endIndex={daily.length - 1}
+                  travellerWidth={12}
+                  stroke="#94a3b8"
+                  fill="#e2e8f0"
+                  tickFormatter={() => ""}
+                />
+              )}
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>

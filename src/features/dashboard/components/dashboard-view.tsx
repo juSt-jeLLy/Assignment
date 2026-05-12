@@ -2,6 +2,7 @@ import {
   Area,
   AreaChart,
   Bar,
+  Brush,
   CartesianGrid,
   ComposedChart,
   Line,
@@ -45,6 +46,7 @@ export function DashboardView(): React.JSX.Element {
   const metrics = computeOverviewMetrics(data);
   const { trends: metricTrends, trendLabel } = computeOverviewMetricTrends(data, "month");
   const trend = computeDailyTrend(data);
+  const defaultDailyStartIndex = Math.max(0, trend.length - 30);
   const departments = computeDepartmentMetrics(data);
 
   return (
@@ -111,16 +113,24 @@ export function DashboardView(): React.JSX.Element {
           <ExportCsvButton fileName="dashboard-daily-trend.csv" rows={trend} />
         </div>
         <ResponsiveContainer width="100%" height={280}>
-          <AreaChart data={trend}>
+          <AreaChart data={trend} margin={{ top: 8, right: 8, left: 0, bottom: 34 }}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="label"
-              tick={{ fontSize: 11 }}
-              label={{ value: "Date", position: "insideBottom", offset: -2 }}
-            />
+            <XAxis dataKey="label" tick={{ fontSize: 11 }} />
             <YAxis label={{ value: "Feedback Count", angle: -90, position: "insideLeft" }} />
             <Tooltip />
             <Area type="monotone" dataKey="count" stroke="#0891b2" fill="#a5f3fc" />
+            {trend.length > 1 && (
+                <Brush
+                  dataKey="label"
+                  height={20}
+                  startIndex={defaultDailyStartIndex}
+                  endIndex={trend.length - 1}
+                  travellerWidth={12}
+                  stroke="#94a3b8"
+                  fill="#e2e8f0"
+                  tickFormatter={() => ""}
+                />
+              )}
           </AreaChart>
         </ResponsiveContainer>
       </ChartCard>

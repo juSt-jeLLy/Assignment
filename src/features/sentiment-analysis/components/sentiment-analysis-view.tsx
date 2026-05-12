@@ -1,6 +1,7 @@
 import {
   Area,
   AreaChart,
+  Brush,
   CartesianGrid,
   Cell,
   Legend,
@@ -36,6 +37,7 @@ export function SentimentAnalysisView(): React.JSX.Element {
 
   const distribution = computeSentimentDistribution(data);
   const trend = computeDailyTrend(data);
+  const defaultDailyStartIndex = Math.max(0, trend.length - 30);
 
   return (
     <div className="space-y-6">
@@ -72,18 +74,26 @@ export function SentimentAnalysisView(): React.JSX.Element {
             <ExportCsvButton fileName="sentiment-trend.csv" rows={trend} />
           </div>
           <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={trend}>
+            <AreaChart data={trend} margin={{ top: 8, right: 8, left: 0, bottom: 34 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="label"
-                tick={{ fontSize: 11 }}
-                label={{ value: "Date", position: "insideBottom", offset: -2 }}
-              />
+              <XAxis dataKey="label" tick={{ fontSize: 11 }} />
               <YAxis label={{ value: "Sentiment Count", angle: -90, position: "insideLeft" }} />
               <Tooltip />
               <Area type="monotone" dataKey="positive" stroke="#22c55e" fill="#bbf7d0" />
               <Area type="monotone" dataKey="neutral" stroke="#f59e0b" fill="#fde68a" />
               <Area type="monotone" dataKey="negative" stroke="#ef4444" fill="#fecaca" />
+              {trend.length > 1 && (
+                <Brush
+                  dataKey="label"
+                  height={20}
+                  startIndex={defaultDailyStartIndex}
+                  endIndex={trend.length - 1}
+                  travellerWidth={12}
+                  stroke="#94a3b8"
+                  fill="#e2e8f0"
+                  tickFormatter={() => ""}
+                />
+              )}
             </AreaChart>
           </ResponsiveContainer>
         </ChartCard>
