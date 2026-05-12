@@ -17,6 +17,7 @@ import {
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { Skeleton } from "@/components/dashboard/Skeleton";
 import { SENTIMENT_COLORS } from "@/components/dashboard/chartTheme";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   computeDailyTrend,
   computeMonthlyTrend,
@@ -30,6 +31,7 @@ import { PageHeader } from "@/features/shared/components";
 /** Renders detailed feedback analytics charts and sentiment split trends. */
 export function FeedbackAnalyticsView(): React.JSX.Element {
   const { data, isLoading, isError } = useFeedbackRecords();
+  const isMobile = useIsMobile();
 
   if (isLoading) return <Skeleton className="h-96 w-full" />;
   if (isError || !data)
@@ -69,29 +71,38 @@ export function FeedbackAnalyticsView(): React.JSX.Element {
           <div className="mb-2 flex justify-end">
             <ExportCsvButton fileName="feedback-daily-trend.csv" rows={daily} />
           </div>
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={daily} margin={{ top: 8, right: 8, left: 0, bottom: 34 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-              <YAxis label={{ value: "Feedback Count", angle: -90, position: "insideLeft" }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="count" stroke="#0369a1" strokeWidth={2} />
-              <Line type="monotone" dataKey="positive" stroke="#16a34a" />
-              <Line type="monotone" dataKey="negative" stroke="#dc2626" />
-              {daily.length > 1 && (
-                <Brush
-                  dataKey="label"
-                  height={20}
-                  startIndex={defaultDailyStartIndex}
-                  endIndex={daily.length - 1}
-                  travellerWidth={12}
-                  stroke="#94a3b8"
-                  fill="#e2e8f0"
-                  tickFormatter={() => ""}
-                />
-              )}
-            </LineChart>
-          </ResponsiveContainer>
+          <div className="flex items-stretch gap-1 sm:gap-2">
+            <div className="flex w-10 shrink-0 items-center justify-center sm:w-12">
+              <span className="-rotate-90 whitespace-nowrap text-sm text-muted-foreground">
+                Feedback Count
+              </span>
+            </div>
+            <div className="flex-1">
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={daily} margin={{ top: 8, right: 8, left: 0, bottom: 34 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                  <YAxis width={isMobile ? 34 : 40} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="count" stroke="#0369a1" strokeWidth={2} />
+                  <Line type="monotone" dataKey="positive" stroke="#16a34a" />
+                  <Line type="monotone" dataKey="negative" stroke="#dc2626" />
+                  {daily.length > 1 && (
+                    <Brush
+                      dataKey="label"
+                      height={20}
+                      startIndex={defaultDailyStartIndex}
+                      endIndex={daily.length - 1}
+                      travellerWidth={12}
+                      stroke="#94a3b8"
+                      fill="#e2e8f0"
+                      tickFormatter={() => ""}
+                    />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </ChartCard>
         <ChartCard title="Monthly Volume">
           <div className="mb-2 flex justify-end">

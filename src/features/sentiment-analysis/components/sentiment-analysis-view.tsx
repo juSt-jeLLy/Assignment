@@ -1,10 +1,10 @@
 import {
-  Area,
-  AreaChart,
   Brush,
   CartesianGrid,
   Cell,
   Legend,
+  Line,
+  LineChart,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -15,6 +15,7 @@ import {
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { Skeleton } from "@/components/dashboard/Skeleton";
 import { SENTIMENT_COLORS } from "@/components/dashboard/chartTheme";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   computeDailyTrend,
   computeSentimentDistribution,
@@ -26,6 +27,7 @@ import { PageHeader } from "@/features/shared/components";
 /** Renders sentiment distribution and trend charts. */
 export function SentimentAnalysisView(): React.JSX.Element {
   const { data, isLoading, isError } = useFeedbackRecords();
+  const isMobile = useIsMobile();
 
   if (isLoading) return <Skeleton className="h-96 w-full" />;
   if (isError || !data)
@@ -73,29 +75,57 @@ export function SentimentAnalysisView(): React.JSX.Element {
           <div className="mb-2 flex justify-end">
             <ExportCsvButton fileName="sentiment-trend.csv" rows={trend} />
           </div>
-          <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={trend} margin={{ top: 8, right: 8, left: 0, bottom: 34 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-              <YAxis label={{ value: "Sentiment Count", angle: -90, position: "insideLeft" }} />
-              <Tooltip />
-              <Area type="monotone" dataKey="positive" stroke="#22c55e" fill="#bbf7d0" />
-              <Area type="monotone" dataKey="neutral" stroke="#f59e0b" fill="#fde68a" />
-              <Area type="monotone" dataKey="negative" stroke="#ef4444" fill="#fecaca" />
-              {trend.length > 1 && (
-                <Brush
-                  dataKey="label"
-                  height={20}
-                  startIndex={defaultDailyStartIndex}
-                  endIndex={trend.length - 1}
-                  travellerWidth={12}
-                  stroke="#94a3b8"
-                  fill="#e2e8f0"
-                  tickFormatter={() => ""}
-                />
-              )}
-            </AreaChart>
-          </ResponsiveContainer>
+          <div className="flex items-stretch gap-1 sm:gap-2">
+            <div className="flex w-10 shrink-0 items-center justify-center sm:w-12">
+              <span className="-rotate-90 whitespace-nowrap text-sm text-muted-foreground">
+                Sentiment Count
+              </span>
+            </div>
+            <div className="flex-1">
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={trend} margin={{ top: 8, right: 8, left: 0, bottom: 34 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                  <YAxis width={isMobile ? 34 : 40} />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="positive"
+                    stroke="#22c55e"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="neutral"
+                    stroke="#f59e0b"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="negative"
+                    stroke="#ef4444"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  {trend.length > 1 && (
+                    <Brush
+                      dataKey="label"
+                      height={20}
+                      startIndex={defaultDailyStartIndex}
+                      endIndex={trend.length - 1}
+                      travellerWidth={12}
+                      stroke="#94a3b8"
+                      fill="#e2e8f0"
+                      tickFormatter={() => ""}
+                    />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </ChartCard>
       </div>
     </div>

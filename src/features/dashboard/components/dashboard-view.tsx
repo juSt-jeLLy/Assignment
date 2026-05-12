@@ -15,6 +15,7 @@ import { Building2, CircleAlert, MessageSquare, Smile, Star, ThumbsDown } from "
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Skeleton } from "@/components/dashboard/Skeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   useFeedbackRecords,
   computeDailyTrend,
@@ -28,6 +29,7 @@ import { PageHeader } from "@/features/shared/components";
 /** Renders dashboard overview cards and top-level trend charts. */
 export function DashboardView(): React.JSX.Element {
   const { data, isLoading, isError } = useFeedbackRecords();
+  const isMobile = useIsMobile();
 
   if (isLoading) return <Skeleton className="h-96 w-full" />;
   if (isError || !data)
@@ -48,6 +50,18 @@ export function DashboardView(): React.JSX.Element {
   const trend = computeDailyTrend(data);
   const defaultDailyStartIndex = Math.max(0, trend.length - 30);
   const departments = computeDepartmentMetrics(data);
+  const formatDepartmentLabel = (value: string) => {
+    if (!isMobile) return value;
+    const shortMap: Record<string, string> = {
+      Emergency: "ER",
+      Cardiology: "Cardio",
+      Neurology: "Neuro",
+      Orthopedics: "Ortho",
+      Pediatrics: "Peds",
+      ICU: "ICU",
+    };
+    return shortMap[value] ?? value;
+  };
 
   return (
     <div className="space-y-6">
@@ -112,27 +126,36 @@ export function DashboardView(): React.JSX.Element {
         <div className="mb-2 flex justify-end">
           <ExportCsvButton fileName="dashboard-daily-trend.csv" rows={trend} />
         </div>
-        <ResponsiveContainer width="100%" height={280}>
-          <AreaChart data={trend} margin={{ top: 8, right: 8, left: 0, bottom: 34 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-            <YAxis label={{ value: "Feedback Count", angle: -90, position: "insideLeft" }} />
-            <Tooltip />
-            <Area type="monotone" dataKey="count" stroke="#0891b2" fill="#a5f3fc" />
-            {trend.length > 1 && (
-                <Brush
-                  dataKey="label"
-                  height={20}
-                  startIndex={defaultDailyStartIndex}
-                  endIndex={trend.length - 1}
-                  travellerWidth={12}
-                  stroke="#94a3b8"
-                  fill="#e2e8f0"
-                  tickFormatter={() => ""}
-                />
-              )}
-          </AreaChart>
-        </ResponsiveContainer>
+        <div className="flex items-stretch gap-1 sm:gap-2">
+          <div className="flex w-10 shrink-0 items-center justify-center sm:w-12">
+            <span className="-rotate-90 whitespace-nowrap text-sm text-muted-foreground">
+              Feedback Count
+            </span>
+          </div>
+          <div className="flex-1">
+            <ResponsiveContainer width="100%" height={280}>
+              <AreaChart data={trend} margin={{ top: 8, right: 8, left: 0, bottom: 34 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                <YAxis width={isMobile ? 34 : 40} />
+                <Tooltip />
+                <Area type="monotone" dataKey="count" stroke="#0891b2" fill="#a5f3fc" />
+                {trend.length > 1 && (
+                  <Brush
+                    dataKey="label"
+                    height={20}
+                    startIndex={defaultDailyStartIndex}
+                    endIndex={trend.length - 1}
+                    travellerWidth={12}
+                    stroke="#94a3b8"
+                    fill="#e2e8f0"
+                    tickFormatter={() => ""}
+                  />
+                )}
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </ChartCard>
 
       <ChartCard
@@ -142,18 +165,25 @@ export function DashboardView(): React.JSX.Element {
         <div className="mb-2 flex justify-end">
           <ExportCsvButton fileName="dashboard-department-performance.csv" rows={departments} />
         </div>
-        <ResponsiveContainer width="100%" height={340}>
+        <ResponsiveContainer width="100%" height={isMobile ? 420 : 340}>
           <ComposedChart
             data={departments}
             layout="vertical"
-            margin={{ top: 8, right: 20, left: 88, bottom: 24 }}
+            margin={{ top: 8, right: 14, left: isMobile ? 12 : 88, bottom: 24 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               type="number"
-              label={{ value: "Count / Rating", position: "bottom", offset: 6 }}
+              label={
+                isMobile ? undefined : { value: "Count / Rating", position: "bottom", offset: 6 }
+              }
             />
-            <YAxis type="category" dataKey="department" width={148} />
+            <YAxis
+              type="category"
+              dataKey="department"
+              width={isMobile ? 74 : 148}
+              tickFormatter={formatDepartmentLabel}
+            />
             <Tooltip />
             <Bar dataKey="totalReviews" fill="#0ea5e9" name="Total Reviews" />
             <Bar dataKey="complaintCount" fill="#f97316" name="Complaint Count" />
