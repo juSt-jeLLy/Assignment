@@ -1,12 +1,36 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import { fetchFeedbackRecords } from "@/features/feedback/services";
 
-const FEEDBACK_RECORDS_QUERY_KEY = ["feedback-records"] as const;
+const QUERY_KEY = ["feedback-records"] as const;
 
-/** Loads feedback records through TanStack Query. */
 export function useFeedbackRecords() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("feedback_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "feedback_records",
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   return useQuery({
-    queryKey: FEEDBACK_RECORDS_QUERY_KEY,
+    queryKey: QUERY_KEY,
     queryFn: fetchFeedbackRecords,
     staleTime: 5 * 60 * 1000,
   });
