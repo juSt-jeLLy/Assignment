@@ -25,18 +25,12 @@ async function fetchNotifications(): Promise<Notification[]> {
 }
 
 async function markAllRead() {
-  const { error } = await supabase
-    .from("notifications")
-    .update({ read: true })
-    .eq("read", false);
+  const { error } = await supabase.from("notifications").update({ read: true }).eq("read", false);
   if (error) throw new Error(error.message);
 }
 
 async function markOneRead(id: string) {
-  const { error } = await supabase
-    .from("notifications")
-    .update({ read: true })
-    .eq("id", id);
+  const { error } = await supabase.from("notifications").update({ read: true }).eq("id", id);
   if (error) throw new Error(error.message);
 }
 
@@ -46,16 +40,14 @@ export function useNotifications() {
   useEffect(() => {
     const channel = supabase
       .channel("notification_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "notifications" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, () => {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [queryClient]);
 
   const query = useQuery({

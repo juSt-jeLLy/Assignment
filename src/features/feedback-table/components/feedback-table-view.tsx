@@ -44,7 +44,7 @@ export function FeedbackTableView(): React.JSX.Element {
   const resetFilters = useResetFilters();
   // ─────────────────────────────────────────────────────────────────────
 
-  const safeData = data ?? [];
+  const records = useMemo(() => data ?? [], [data]);
 
   const columns = useMemo<ColumnDef<FeedbackRecord>[]>(
     () => [
@@ -65,7 +65,7 @@ export function FeedbackTableView(): React.JSX.Element {
 
   const filteredData = useMemo(
     () =>
-      safeData
+      records
         .filter((row) => (department === "All" ? true : row.department === department))
         .filter((row) => (sentiment === "All" ? true : row.sentiment === sentiment))
         .filter((row) => (rating === "All" ? true : row.rating === Number(rating)))
@@ -79,7 +79,7 @@ export function FeedbackTableView(): React.JSX.Element {
             row.feedback.toLowerCase().includes(q)
           );
         }),
-    [safeData, department, sentiment, rating, globalSearch],
+    [records, department, sentiment, rating, globalSearch],
   );
 
   const table = useReactTable({
@@ -94,8 +94,8 @@ export function FeedbackTableView(): React.JSX.Element {
   });
 
   const departments = useMemo(
-    () => ["All", ...Array.from(new Set(safeData.map((entry) => entry.department)))],
-    [safeData],
+    () => ["All", ...Array.from(new Set(records.map((entry) => entry.department)))],
+    [records],
   );
 
   if (isLoading) return <Skeleton className="h-96 w-full" />;

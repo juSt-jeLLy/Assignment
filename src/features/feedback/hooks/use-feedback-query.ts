@@ -20,7 +20,7 @@ export function useFeedbackRecords() {
         },
         () => {
           queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-        }
+        },
       )
       .subscribe();
 

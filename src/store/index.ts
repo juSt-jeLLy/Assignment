@@ -2,7 +2,10 @@ import { create } from "zustand";
 import { persist, devtools } from "zustand/middleware";
 import { createUISlice, type UIState } from "./slices/uiSlice";
 import { createFiltersSlice, type FiltersState } from "./slices/filtersSlice";
-import { createUserPreferencesSlice, type UserPreferencesState } from "./slices/userPreferencesSlice";
+import {
+  createUserPreferencesSlice,
+  type UserPreferencesState,
+} from "./slices/userPreferencesSlice";
 
 export type AppStore = UIState & FiltersState & UserPreferencesState;
 
@@ -21,7 +24,7 @@ export const useAppStore = create<AppStore>()(
         partialize: (state) => ({
           displayName: state.displayName,
           email: state.email,
-          department: state.department,
+          userDepartment: state.userDepartment,
           notifyNewComplaints: state.notifyNewComplaints,
           notifyLowRatings: state.notifyLowRatings,
           notifyWeeklyDigest: state.notifyWeeklyDigest,
@@ -29,6 +32,15 @@ export const useAppStore = create<AppStore>()(
           defaultChartType: state.defaultChartType,
           tableDensity: state.tableDensity,
           itemsPerPage: state.itemsPerPage,
+          tableDepartment: state.tableDepartment,
+          sentiment: state.sentiment,
+          rating: state.rating,
+          status: state.status,
+          globalSearch: state.globalSearch,
+          dateFrom: state.dateFrom,
+          dateTo: state.dateTo,
+          doctorSearch: state.doctorSearch,
+          doctorDepartment: state.doctorDepartment,
           sidebarOpen: state.sidebarOpen,
         }),
       },
@@ -53,27 +65,32 @@ export const useOpenModal = () => useAppStore((s) => s.openModal);
 export const useCloseModal = () => useAppStore((s) => s.closeModal);
 
 // ── Filters slice selectors ───────────────────────────────────────────────────
-export const useDepartmentFilter = () => useAppStore((s) => s.department);
+export const useDepartmentFilter = () => useAppStore((s) => s.tableDepartment);
 export const useSentimentFilter = () => useAppStore((s) => s.sentiment);
 export const useRatingFilter = () => useAppStore((s) => s.rating);
 export const useStatusFilter = () => useAppStore((s) => s.status);
 export const useGlobalSearch = () => useAppStore((s) => s.globalSearch);
 export const useDateFrom = () => useAppStore((s) => s.dateFrom);
 export const useDateTo = () => useAppStore((s) => s.dateTo);
+export const useDoctorSearch = () => useAppStore((s) => s.doctorSearch);
+export const useDoctorDepartmentFilter = () => useAppStore((s) => s.doctorDepartment);
 
-export const useSetDepartment = () => useAppStore((s) => s.setDepartment);
+export const useSetDepartment = () => useAppStore((s) => s.setTableDepartment);
 export const useSetSentiment = () => useAppStore((s) => s.setSentiment);
 export const useSetRating = () => useAppStore((s) => s.setRating);
 export const useSetStatus = () => useAppStore((s) => s.setStatus);
 export const useSetGlobalSearch = () => useAppStore((s) => s.setGlobalSearch);
 export const useSetDateFrom = () => useAppStore((s) => s.setDateFrom);
 export const useSetDateTo = () => useAppStore((s) => s.setDateTo);
+export const useSetDoctorSearch = () => useAppStore((s) => s.setDoctorSearch);
+export const useSetDoctorDepartment = () => useAppStore((s) => s.setDoctorDepartment);
 export const useResetFilters = () => useAppStore((s) => s.resetFilters);
 
 // ── User preferences selectors ────────────────────────────────────────────────
 export const useDisplayName = () => useAppStore((s) => s.displayName);
 export const useEmail = () => useAppStore((s) => s.email);
 export const useRole = () => useAppStore((s) => s.role);
+export const useUserDepartment = () => useAppStore((s) => s.userDepartment);
 
 export const useNotifyNewComplaints = () => useAppStore((s) => s.notifyNewComplaints);
 export const useNotifyLowRatings = () => useAppStore((s) => s.notifyLowRatings);
@@ -86,6 +103,7 @@ export const useItemsPerPage = () => useAppStore((s) => s.itemsPerPage);
 
 export const useSetDisplayName = () => useAppStore((s) => s.setDisplayName);
 export const useSetEmail = () => useAppStore((s) => s.setEmail);
+export const useSetUserDepartment = () => useAppStore((s) => s.setUserDepartment);
 export const useSetNotifyNewComplaints = () => useAppStore((s) => s.setNotifyNewComplaints);
 export const useSetNotifyLowRatings = () => useAppStore((s) => s.setNotifyLowRatings);
 export const useSetNotifyWeeklyDigest = () => useAppStore((s) => s.setNotifyWeeklyDigest);

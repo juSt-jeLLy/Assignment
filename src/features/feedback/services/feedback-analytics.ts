@@ -96,7 +96,10 @@ export function computeMonthlyTrend(records: FeedbackRecord[]): TrendPoint[] {
 export function computeRatingDistribution(records: FeedbackRecord[]): RatingDistributionPoint[] {
   const counts = [1, 2, 3, 4, 5].map((rating) => ({ rating, count: 0 }));
   records.forEach((record) => {
-    counts[record.rating - 1].count += 1;
+    const index = Number(record.rating) - 1;
+    if (index >= 0 && index < counts.length) {
+      counts[index].count += 1;
+    }
   });
   return counts;
 }

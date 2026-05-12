@@ -13,15 +13,23 @@ import { computeDoctorPerformance, useFeedbackRecords } from "@/features/feedbac
 import { ExportCsvButton } from "@/features/shared/export";
 import { FilterSelect, PageHeader } from "@/features/shared/components";
 import { Skeleton } from "@/components/dashboard/Skeleton";
+import {
+  useDoctorSearch,
+  useSetDoctorSearch,
+  useDoctorDepartmentFilter,
+  useSetDoctorDepartment,
+} from "@/store";
 
 /** Renders sortable doctor ranking table with search and department filters. */
 export function DoctorPerformanceView(): React.JSX.Element {
   const { data, isLoading, isError } = useFeedbackRecords();
   const [sorting, setSorting] = useState<SortingState>([{ id: "consultationRating", desc: true }]);
-  const [search, setSearch] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("All");
-  const safeData = data ?? [];
-  const rows = useMemo(() => computeDoctorPerformance(safeData), [safeData]);
+  const search = useDoctorSearch();
+  const setSearch = useSetDoctorSearch();
+  const departmentFilter = useDoctorDepartmentFilter();
+  const setDepartmentFilter = useSetDoctorDepartment();
+  const records = useMemo(() => data ?? [], [data]);
+  const rows = useMemo(() => computeDoctorPerformance(records), [records]);
   const filteredRows = useMemo(
     () =>
       rows

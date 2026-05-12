@@ -47,7 +47,7 @@ export function TopBar() {
   }, [setNotificationPanelOpen]);
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-md sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-background/95 px-4 backdrop-blur-md sm:px-6">
       <button
         className="lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border"
         onClick={() => setMobileDrawerOpen(true)}
@@ -100,7 +100,7 @@ export function TopBar() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="absolute right-0 top-11 z-50 w-80 rounded-2xl border border-border bg-card shadow-elegant overflow-hidden"
+                className="fixed left-1/2 top-20 z-50 w-[min(22rem,calc(100vw-1.5rem))] -translate-x-1/2 overflow-hidden rounded-2xl border border-border bg-card shadow-elegant sm:absolute sm:left-auto sm:right-0 sm:top-11 sm:w-80 sm:translate-x-0"
               >
                 <div className="flex items-center justify-between px-4 py-3 border-b border-border">
                   <p className="text-sm font-semibold">Notifications</p>
@@ -151,40 +151,43 @@ export function TopBar() {
               animate={{ x: 0 }}
               exit={{ x: -300 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed inset-y-0 left-0 z-50 w-72 border-r border-border bg-sidebar p-4 lg:hidden"
+              className="fixed left-3 top-3 z-50 isolate w-72 max-w-[calc(100vw-2.5rem)] overflow-hidden rounded-2xl border border-border p-4 shadow-elegant lg:hidden"
             >
-              <div className="flex items-center gap-3 px-2 py-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary">
-                  <Brand className="h-5 w-5 text-primary-foreground" />
+              <div className="absolute inset-0 bg-sidebar" aria-hidden="true" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 px-2 py-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary">
+                    <Brand className="h-5 w-5 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold">{APP_BRAND.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{APP_BRAND.tagline}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-bold">{APP_BRAND.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{APP_BRAND.tagline}</p>
-                </div>
+                <nav className="mt-2 space-y-1">
+                  {NAV_ITEMS.map((item) => {
+                    const Icon = item.icon;
+                    const active =
+                      pathname === item.to || (pathname === "/" && item.to === "/dashboard");
+                    return (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setMobileDrawerOpen(false)}
+                        className={cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-smooth",
+                          active
+                            ? "bg-gradient-primary text-primary-foreground"
+                            : "hover:bg-sidebar-accent",
+                        )}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
               </div>
-              <nav className="mt-2 space-y-1">
-                {NAV_ITEMS.map((item) => {
-                  const Icon = item.icon;
-                  const active =
-                    pathname === item.to || (pathname === "/" && item.to === "/dashboard");
-                  return (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      onClick={() => setMobileDrawerOpen(false)}
-                      className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-smooth",
-                        active
-                          ? "bg-gradient-primary text-primary-foreground"
-                          : "hover:bg-sidebar-accent",
-                      )}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </nav>
             </motion.aside>
           </>
         )}
@@ -225,9 +228,7 @@ function NotificationItem({
           {new Date(notification.createdAt).toLocaleString()}
         </p>
       </div>
-      {!notification.read && (
-        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
-      )}
+      {!notification.read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />}
     </div>
   );
 }

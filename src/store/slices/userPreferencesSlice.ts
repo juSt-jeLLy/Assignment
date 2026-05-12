@@ -5,7 +5,7 @@ export type TableDensity = "comfortable" | "compact";
 export interface UserPreferencesState {
   displayName: string;
   email: string;
-  department: string;
+  userDepartment: string;
   role: string;
 
   // Notification preferences
@@ -21,7 +21,7 @@ export interface UserPreferencesState {
 
   setDisplayName: (name: string) => void;
   setEmail: (email: string) => void;
-  setDepartment: (department: string) => void;
+  setUserDepartment: (department: string) => void;
   setNotifyNewComplaints: (value: boolean) => void;
   setNotifyLowRatings: (value: boolean) => void;
   setNotifyWeeklyDigest: (value: boolean) => void;
@@ -36,7 +36,7 @@ export const createUserPreferencesSlice = (
 ): UserPreferencesState => ({
   displayName: "Hospital Admin",
   email: "admin@pulsecare.io",
-  department: "Operations",
+  userDepartment: "Operations",
   role: "Administrator",
 
   notifyNewComplaints: true,
@@ -50,7 +50,7 @@ export const createUserPreferencesSlice = (
 
   setDisplayName: (displayName) => set(() => ({ displayName })),
   setEmail: (email) => set(() => ({ email })),
-  setDepartment: (department) => set(() => ({ department })),
+  setUserDepartment: (userDepartment) => set(() => ({ userDepartment })),
   setNotifyNewComplaints: (notifyNewComplaints) => set(() => ({ notifyNewComplaints })),
   setNotifyLowRatings: (notifyLowRatings) => set(() => ({ notifyLowRatings })),
   setNotifyWeeklyDigest: (notifyWeeklyDigest) => set(() => ({ notifyWeeklyDigest })),
