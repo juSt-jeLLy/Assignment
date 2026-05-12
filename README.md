@@ -188,18 +188,75 @@ npm run lint
 ```text
 src/
   components/
+    dashboard/
+    ui/
   features/
+    complaints-management/
+    dashboard/
+    doctor-performance/
+    feedback/
+      data/
+      hooks/
+      services/
+      types/
+    feedback-analytics/
+    feedback-table/
+    layout/
+    notifications/
+    sentiment-analysis/
+    shared/
+      components/
+      export/
+    theme/
   hooks/
   lib/
   routes/
   store/
+    slices/
+  main.tsx
+  router.tsx
+  routeTree.gen.ts
 ```
 
-## Known Limitations
+## Technical Details
 
-- Percentage trend badges on dashboard cards are hidden when no previous-period data exists (intentional to avoid misleading values).
-- Lint currently includes non-blocking `react-refresh/only-export-components` warnings from generated/shared UI files.
-- Authentication and role-based access control are not implemented.
+### Architecture
+
+- Feature-first module organization under `src/features`
+- Shared primitives under `src/components/ui` and reusable dashboard blocks under `src/components/dashboard`
+- Route-per-page setup with TanStack Router under `src/routes`
+
+### State Management (Zustand)
+
+- Global store in `src/store/index.ts` with slice pattern:
+  - `uiSlice` for UI panel/drawer/modal state
+  - `filtersSlice` for table/analytics filter state
+  - `userPreferencesSlice` for user and notification preferences
+- Persist middleware stores selected preferences in local storage
+- Local component state is limited to isolated interaction concerns (for example table sorting controls)
+
+### Data Fetching and Caching (TanStack Query)
+
+- Query hooks encapsulate server reads and cache invalidation
+- Feedback records fetched via `useFeedbackRecords` with query key isolation
+- Notifications fetched and managed via `useNotifications` hook
+- Mutation flows (`markOneRead`, `markAllRead`) trigger query invalidation for consistency
+
+### Supabase Integration
+
+- Supabase client configured in `src/lib/supabase.ts` using:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_ANON_KEY`
+- Data source tables used by app:
+  - `feedback_records`
+  - `notifications`
+
+### Realtime Updates
+
+- Realtime subscriptions use `supabase.channel(...).on("postgres_changes", ...)`
+- Live channel for `feedback_records` invalidates feedback queries on insert/update/delete
+- Live channel for `notifications` invalidates notification queries on insert/update/delete
+- Notifications are generated from database trigger logic when feedback rows are inserted
 
 ## Notes for Review
 
