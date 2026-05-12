@@ -1,19 +1,35 @@
 import { Bell, Menu, Search } from "lucide-react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/features/theme/ThemeToggle";
 import { APP_BRAND, NAV_ITEMS } from "./navConfig";
 import { cn } from "@/lib/utils";
+import { useNotifications } from "@/features/notifications/use-notifications";
+import type { Notification } from "@/features/notifications/types";
 
-/** Top app bar with mobile drawer + theme toggle. */
 export function TopBar() {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+  const { notifications, unreadCount, markAllRead, markOneRead } = useNotifications();
+
   const current = NAV_ITEMS.find(
     (n) => n.to === pathname || (pathname === "/" && n.to === "/dashboard"),
   );
   const Brand = APP_BRAND.icon;
+
+  // Close on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-md sm:px-6">
@@ -40,17 +56,69 @@ export function TopBar() {
             className="h-9 w-64 rounded-lg border border-border bg-card pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
-        <button
-          aria-label="Notifications"
-          className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card hover:bg-accent transition-smooth"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive animate-pulse-glow" />
-        </button>
+
+        {/* Notification Bell */}
+        <div className="relative" ref={notifRef}>
+          <button
+            aria-label="Notifications"
+            onClick={() => {
+              setNotifOpen((v) => !v);
+              if (!notifOpen && unreadCount > 0) markAllRead(undefined);
+            }}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card hover:bg-accent transition-smooth"
+          >
+            <Bell className="h-4 w-4" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white animate-pulse-glow">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
+
+          <AnimatePresence>
+            {notifOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="absolute right-0 top-11 z-50 w-80 rounded-2xl border border-border bg-card shadow-elegant overflow-hidden"
+              >
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                  <p className="text-sm font-semibold">Notifications</p>
+                  <button
+                    onClick={() => markAllRead(undefined)}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Mark all read
+                  </button>
+                </div>
+
+                <div className="max-h-80 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-sm text-muted-foreground">
+                      <Bell className="h-8 w-8 mb-2 opacity-30" />
+                      No notifications yet
+                    </div>
+                  ) : (
+                    notifications.map((n) => (
+                      <NotificationItem
+                        key={n.id}
+                        notification={n}
+                        onRead={() => markOneRead(n.id)}
+                      />
+                    ))
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
         <ThemeToggle />
       </div>
 
-      {/* Mobile drawer */}
+      {/* Mobile drawer - keep existing code */}
       <AnimatePresence>
         {open && (
           <>
@@ -105,5 +173,42 @@ export function TopBar() {
         )}
       </AnimatePresence>
     </header>
+  );
+}
+
+function NotificationItem({
+  notification,
+  onRead,
+}: {
+  notification: Notification;
+  onRead: () => void;
+}) {
+  return (
+    <div
+      onClick={onRead}
+      className={cn(
+        "flex gap-3 px-4 py-3 cursor-pointer hover:bg-accent/50 transition-smooth border-b border-border/50 last:border-0",
+        !notification.read && "bg-primary/5"
+      )}
+    >
+      <div className={cn(
+        "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm",
+        notification.type === "complaint"
+          ? "bg-destructive/15 text-destructive"
+          : "bg-success/15 text-success"
+      )}>
+        {notification.type === "complaint" ? "⚠️" : "✓"}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium">{notification.title}</p>
+        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{notification.message}</p>
+        <p className="text-[10px] text-muted-foreground mt-1">
+          {new Date(notification.createdAt).toLocaleString()}
+        </p>
+      </div>
+      {!notification.read && (
+        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+      )}
+    </div>
   );
 }
