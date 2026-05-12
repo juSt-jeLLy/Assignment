@@ -1,8 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
-import { createRootRouteWithContext, Link, Outlet } from "@tanstack/react-router";
-import { ThemeProvider } from "@/features/theme/ThemeProvider";
+import { createRootRouteWithContext, Link } from "@tanstack/react-router";
 import { AppShell } from "@/features/layout/AppShell";
-import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -30,10 +28,5 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootComponent() {
-  return (
-    <ThemeProvider>
-      <AppShell />
-      <Toaster />
-    </ThemeProvider>
-  );
+  return <AppShell />;
 }

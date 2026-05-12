@@ -20,6 +20,7 @@ import { SENTIMENT_COLORS } from "@/components/dashboard/chartTheme";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   computeDailyTrend,
+  computeDepartmentMetrics,
   computeMonthlyTrend,
   computeRatingDistribution,
   computeSentimentDistribution,
@@ -52,6 +53,10 @@ export function FeedbackAnalyticsView(): React.JSX.Element {
   const monthly = computeMonthlyTrend(data);
   const ratings = computeRatingDistribution(data);
   const sentiment = computeSentimentDistribution(data);
+  const byDepartment = computeDepartmentMetrics(data).map((row) => ({
+    department: row.department,
+    count: row.totalReviews,
+  }));
 
   return (
     <div className="space-y-6">
@@ -108,35 +113,76 @@ export function FeedbackAnalyticsView(): React.JSX.Element {
           <div className="mb-2 flex justify-end">
             <ExportCsvButton fileName="feedback-monthly-volume.csv" rows={monthly} />
           </div>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={monthly}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="label"
-                label={{ value: "Month", position: "insideBottom", offset: -2 }}
-              />
-              <YAxis label={{ value: "Feedback Count", angle: -90, position: "insideLeft" }} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#0891b2" />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="flex items-stretch gap-1 sm:gap-2">
+            <div className="flex w-10 shrink-0 items-center justify-center sm:w-12">
+              <span className="-rotate-90 whitespace-nowrap text-sm text-muted-foreground">
+                Feedback Count
+              </span>
+            </div>
+            <div className="flex-1">
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={monthly} margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="label"
+                    label={{ value: "Month", position: "insideBottom", offset: -2 }}
+                  />
+                  <YAxis width={isMobile ? 34 : 40} />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#0891b2" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </ChartCard>
         <ChartCard title="Rating Distribution">
           <div className="mb-2 flex justify-end">
             <ExportCsvButton fileName="feedback-rating-distribution.csv" rows={ratings} />
           </div>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={ratings} margin={{ top: 8, right: 16, left: 8, bottom: 24 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="rating"
-                label={{ value: "Rating (1-5)", position: "bottom", offset: 6 }}
-              />
-              <YAxis label={{ value: "Number of Feedbacks", angle: -90, position: "insideLeft" }} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#0f766e" />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="flex items-stretch gap-1 sm:gap-2">
+            <div className="flex w-10 shrink-0 items-center justify-center sm:w-12">
+              <span className="-rotate-90 whitespace-nowrap text-sm text-muted-foreground">
+                Feedback Count
+              </span>
+            </div>
+            <div className="flex-1">
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={ratings} margin={{ top: 8, right: 16, left: 0, bottom: 24 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="rating"
+                    label={{ value: "Rating (1-5)", position: "bottom", offset: 6 }}
+                  />
+                  <YAxis width={isMobile ? 34 : 40} />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#0f766e" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </ChartCard>
+        <ChartCard title="Feedback by Department">
+          <div className="mb-2 flex justify-end">
+            <ExportCsvButton fileName="feedback-by-department.csv" rows={byDepartment} />
+          </div>
+          <div className="flex items-stretch gap-1 sm:gap-2">
+            <div className="flex w-10 shrink-0 items-center justify-center sm:w-12">
+              <span className="-rotate-90 whitespace-nowrap text-sm text-muted-foreground">
+                Feedback Count
+              </span>
+            </div>
+            <div className="flex-1">
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={byDepartment} margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="department" tick={{ fontSize: 11 }} />
+                  <YAxis width={isMobile ? 34 : 40} />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#0ea5e9" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </ChartCard>
         <ChartCard title="Sentiment Split">
           <div className="mb-2 flex justify-end">

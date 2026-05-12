@@ -15,6 +15,7 @@ import { CheckCircle2, Clock3, MessageSquareWarning } from "lucide-react";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Skeleton } from "@/components/dashboard/Skeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   computeAverageResolutionTime,
   computeComplaintCategoryData,
@@ -30,6 +31,7 @@ const palette = ["#e11d48", "#22c55e", "#4f46e5", "#f59e0b", "#0ea5e9", "#f97316
 /** Renders complaint KPIs and complaint-focused charts. */
 export function ComplaintsManagementView(): React.JSX.Element {
   const { data, isLoading, isError } = useFeedbackRecords();
+  const isMobile = useIsMobile();
 
   if (isLoading) return <Skeleton className="h-96 w-full" />;
   if (isError || !data)
@@ -102,18 +104,27 @@ export function ComplaintsManagementView(): React.JSX.Element {
           <div className="mb-2 flex justify-end">
             <ExportCsvButton fileName="complaint-status-summary.csv" rows={statusSummary} />
           </div>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={statusSummary}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="status"
-                label={{ value: "Resolution Status", position: "insideBottom", offset: -2 }}
-              />
-              <YAxis label={{ value: "Complaint Count", angle: -90, position: "insideLeft" }} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#0284c7" />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="flex items-stretch gap-1 sm:gap-2">
+            <div className="flex w-10 shrink-0 items-center justify-center sm:w-12">
+              <span className="-rotate-90 whitespace-nowrap text-sm text-muted-foreground">
+                Complaint Count
+              </span>
+            </div>
+            <div className="flex-1">
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={statusSummary} margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="status"
+                    label={{ value: "Resolution Status", position: "insideBottom", offset: -2 }}
+                  />
+                  <YAxis width={isMobile ? 34 : 40} />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#0284c7" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </ChartCard>
       </div>
 
@@ -121,21 +132,30 @@ export function ComplaintsManagementView(): React.JSX.Element {
         <div className="mb-2 flex justify-end">
           <ExportCsvButton fileName="complaint-status-trend.csv" rows={statusTrend} />
         </div>
-        <ResponsiveContainer width="100%" height={320}>
-          <BarChart data={statusTrend}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="month"
-              label={{ value: "Month", position: "insideBottom", offset: -2 }}
-            />
-            <YAxis label={{ value: "Complaint Count", angle: -90, position: "insideLeft" }} />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="pending" stackId="status" fill="#f97316" />
-            <Bar dataKey="inProgress" stackId="status" fill="#eab308" />
-            <Bar dataKey="resolved" stackId="status" fill="#22c55e" />
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="flex items-stretch gap-1 sm:gap-2">
+          <div className="flex w-10 shrink-0 items-center justify-center sm:w-12">
+            <span className="-rotate-90 whitespace-nowrap text-sm text-muted-foreground">
+              Complaint Count
+            </span>
+          </div>
+          <div className="flex-1">
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={statusTrend} margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="month"
+                  label={{ value: "Month", position: "insideBottom", offset: -2 }}
+                />
+                <YAxis width={isMobile ? 34 : 40} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="pending" stackId="status" fill="#f97316" />
+                <Bar dataKey="inProgress" stackId="status" fill="#eab308" />
+                <Bar dataKey="resolved" stackId="status" fill="#22c55e" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </ChartCard>
     </div>
   );
