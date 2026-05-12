@@ -81,7 +81,7 @@ export function TopBar() {
             aria-label="Notifications"
             onClick={() => {
               setNotificationPanelOpen(!notificationPanelOpen);
-              if (!notificationPanelOpen && unreadCount > 0) markAllRead(undefined);
+              if (!notificationPanelOpen && unreadCount > 0) markAllRead();
             }}
             className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card hover:bg-accent transition-smooth"
           >
@@ -104,10 +104,7 @@ export function TopBar() {
               >
                 <div className="flex items-center justify-between px-4 py-3 border-b border-border">
                   <p className="text-sm font-semibold">Notifications</p>
-                  <button
-                    onClick={() => markAllRead(undefined)}
-                    className="text-xs text-primary hover:underline"
-                  >
+                  <button onClick={markAllRead} className="text-xs text-primary hover:underline">
                     Mark all read
                   </button>
                 </div>

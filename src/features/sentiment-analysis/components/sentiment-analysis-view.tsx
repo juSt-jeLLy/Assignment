@@ -82,6 +82,7 @@ export function SentimentAnalysisView(): React.JSX.Element {
               <YAxis label={{ value: "Sentiment Count", angle: -90, position: "insideLeft" }} />
               <Tooltip />
               <Area type="monotone" dataKey="positive" stroke="#22c55e" fill="#bbf7d0" />
+              <Area type="monotone" dataKey="neutral" stroke="#f59e0b" fill="#fde68a" />
               <Area type="monotone" dataKey="negative" stroke="#ef4444" fill="#fecaca" />
             </AreaChart>
           </ResponsiveContainer>

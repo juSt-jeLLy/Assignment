@@ -7,7 +7,9 @@ export interface StatCardProps {
   label: string;
   value: string;
   icon: LucideIcon;
-  trend?: number;
+  trend?: number | null;
+  trendLabel?: string;
+  trendUnavailableLabel?: string;
   accent?: "primary" | "success" | "warning" | "destructive" | "info";
   delay?: number;
 }
@@ -26,6 +28,8 @@ export function StatCard({
   value,
   icon: Icon,
   trend,
+  trendLabel = "vs last period",
+  trendUnavailableLabel = "No previous-period data",
   accent = "primary",
   delay = 0,
 }: StatCardProps) {
@@ -77,8 +81,11 @@ export function StatCard({
             )}
             {Math.abs(trend).toFixed(1)}%
           </span>
-          <span className="text-muted-foreground">vs last period</span>
+          <span className="text-muted-foreground">{trendLabel}</span>
         </div>
+      )}
+      {trend === null && (
+        <div className="relative mt-4 text-xs text-muted-foreground">{trendUnavailableLabel}</div>
       )}
     </motion.div>
   );

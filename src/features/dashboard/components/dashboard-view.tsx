@@ -18,6 +18,7 @@ import {
   useFeedbackRecords,
   computeDailyTrend,
   computeDepartmentMetrics,
+  computeOverviewMetricTrends,
   computeOverviewMetrics,
 } from "@/features/feedback";
 import { ExportCsvButton } from "@/features/shared/export";
@@ -42,6 +43,7 @@ export function DashboardView(): React.JSX.Element {
     );
 
   const metrics = computeOverviewMetrics(data);
+  const { trends: metricTrends, trendLabel } = computeOverviewMetricTrends(data, "month");
   const trend = computeDailyTrend(data);
   const departments = computeDepartmentMetrics(data);
 
@@ -64,23 +66,43 @@ export function DashboardView(): React.JSX.Element {
           label="Total Feedbacks"
           value={`${metrics.totalFeedbacks}`}
           icon={MessageSquare}
+          trend={metricTrends.totalFeedbacks}
+          trendLabel={trendLabel}
         />
-        <StatCard label="Average Rating" value={`${metrics.averageRating}/5`} icon={Star} />
-        <StatCard label="Positive Feedback" value={`${metrics.positivePercentage}%`} icon={Smile} />
+        <StatCard
+          label="Average Rating"
+          value={`${metrics.averageRating}/5`}
+          icon={Star}
+          trend={metricTrends.averageRating}
+          trendLabel={trendLabel}
+        />
+        <StatCard
+          label="Positive Feedback"
+          value={`${metrics.positivePercentage}%`}
+          icon={Smile}
+          trend={metricTrends.positivePercentage}
+          trendLabel={trendLabel}
+        />
         <StatCard
           label="Negative Feedback"
           value={`${metrics.negativePercentage}%`}
           icon={ThumbsDown}
+          trend={metricTrends.negativePercentage}
+          trendLabel={trendLabel}
         />
         <StatCard
           label="Total Complaints"
           value={`${metrics.totalComplaints}`}
           icon={CircleAlert}
+          trend={metricTrends.totalComplaints}
+          trendLabel={trendLabel}
         />
         <StatCard
           label="Active Departments"
           value={`${metrics.activeDepartments}`}
           icon={Building2}
+          trend={metricTrends.activeDepartments}
+          trendLabel={trendLabel}
         />
       </section>
 

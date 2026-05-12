@@ -2,6 +2,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Notification } from "./types";
+import { useNotifyLowRatings, useNotifyNewComplaints } from "@/store";
 
 const QUERY_KEY = ["notifications"] as const;
 
@@ -24,8 +25,13 @@ async function fetchNotifications(): Promise<Notification[]> {
   }));
 }
 
-async function markAllRead() {
-  const { error } = await supabase.from("notifications").update({ read: true }).eq("read", false);
+async function markAllRead(enabledTypes: Notification["type"][]) {
+  if (enabledTypes.length === 0) return;
+  const { error } = await supabase
+    .from("notifications")
+    .update({ read: true })
+    .eq("read", false)
+    .in("type", enabledTypes);
   if (error) throw new Error(error.message);
 }
 
@@ -36,6 +42,8 @@ async function markOneRead(id: string) {
 
 export function useNotifications() {
   const queryClient = useQueryClient();
+  const notifyNewComplaints = useNotifyNewComplaints();
+  const notifyFeedback = useNotifyLowRatings();
 
   useEffect(() => {
     const channel = supabase
@@ -65,13 +73,23 @@ export function useNotifications() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
   });
 
-  const unreadCount = query.data?.filter((n) => !n.read).length ?? 0;
+  const notifications = (query.data ?? []).filter((n) => {
+    if (n.type === "complaint") return notifyNewComplaints;
+    if (n.type === "feedback") return notifyFeedback;
+    return true;
+  });
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+  const enabledTypes = [
+    ...(notifyNewComplaints ? (["complaint"] as const) : []),
+    ...(notifyFeedback ? (["feedback"] as const) : []),
+  ] as Notification["type"][];
 
   return {
-    notifications: query.data ?? [],
+    notifications,
     unreadCount,
     isLoading: query.isLoading,
-    markAllRead: markAllReadMutation.mutate,
+    markAllRead: () => markAllReadMutation.mutate(enabledTypes),
     markOneRead: markOneReadMutation.mutate,
   };
 }

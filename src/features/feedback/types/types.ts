@@ -55,7 +55,17 @@ export interface TrendPoint {
   label: string;
   count: number;
   positive: number;
+  neutral: number;
   negative: number;
+}
+
+export interface OverviewMetricTrends {
+  totalFeedbacks: number | null;
+  averageRating: number | null;
+  positivePercentage: number | null;
+  negativePercentage: number | null;
+  totalComplaints: number | null;
+  activeDepartments: number | null;
 }
 
 export interface RatingDistributionPoint {

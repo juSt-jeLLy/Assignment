@@ -5,6 +5,7 @@ import type {
   DoctorPerformanceRow,
   FeedbackRecord,
   OverviewMetrics,
+  OverviewMetricTrends,
   RatingDistributionPoint,
   SentimentPoint,
   StatusSummaryPoint,
@@ -30,6 +31,14 @@ export function roundToTwo(value: number): number {
 export function toPercentage(part: number, total: number): number {
   if (total === 0) return 0;
   return roundToTwo((part / total) * 100);
+}
+
+/** Computes percentage delta between current and previous values. */
+export function percentageDelta(current: number, previous: number): number | null {
+  if (previous === 0) {
+    return current === 0 ? 0 : null;
+  }
+  return roundToTwo(((current - previous) / previous) * 100);
 }
 
 /** Returns day difference between two ISO dates. */
@@ -66,9 +75,16 @@ export function computeDailyTrend(records: FeedbackRecord[]): TrendPoint[] {
 
   records.forEach((record) => {
     const label = toDayLabel(record.date);
-    const current = trendMap.get(label) ?? { label, count: 0, positive: 0, negative: 0 };
+    const current = trendMap.get(label) ?? {
+      label,
+      count: 0,
+      positive: 0,
+      neutral: 0,
+      negative: 0,
+    };
     current.count += 1;
     if (record.sentiment === "Positive") current.positive += 1;
+    if (record.sentiment === "Neutral") current.neutral += 1;
     if (record.sentiment === "Negative") current.negative += 1;
     trendMap.set(label, current);
   });
@@ -82,9 +98,16 @@ export function computeMonthlyTrend(records: FeedbackRecord[]): TrendPoint[] {
 
   records.forEach((record) => {
     const label = toMonthLabel(record.date);
-    const current = trendMap.get(label) ?? { label, count: 0, positive: 0, negative: 0 };
+    const current = trendMap.get(label) ?? {
+      label,
+      count: 0,
+      positive: 0,
+      neutral: 0,
+      negative: 0,
+    };
     current.count += 1;
     if (record.sentiment === "Positive") current.positive += 1;
+    if (record.sentiment === "Neutral") current.neutral += 1;
     if (record.sentiment === "Negative") current.negative += 1;
     trendMap.set(label, current);
   });
@@ -218,4 +241,91 @@ export function computeAverageResolutionTime(records: FeedbackRecord[]): number 
     0,
   );
   return roundToTwo(total / resolved.length);
+}
+
+/** Compares the latest period against the previous period for dashboard KPI trend badges. */
+export function computeOverviewMetricTrends(
+  records: FeedbackRecord[],
+  period: "month" | "day" = "month",
+): { trends: OverviewMetricTrends; trendLabel: string } {
+  const empty = {
+    totalFeedbacks: null,
+    averageRating: null,
+    positivePercentage: null,
+    negativePercentage: null,
+    totalComplaints: null,
+    activeDepartments: null,
+  } satisfies OverviewMetricTrends;
+
+  if (records.length === 0) {
+    return {
+      trends: empty,
+      trendLabel: period === "month" ? "vs previous month" : "vs previous day",
+    };
+  }
+
+  const sorted = [...records].sort((a, b) => a.date.localeCompare(b.date));
+  const latestDate = sorted[sorted.length - 1].date.slice(0, 10);
+  const currentLabel = period === "month" ? toMonthLabel(latestDate) : latestDate;
+
+  let previousLabel: string;
+  if (period === "month") {
+    const [year, monthNumber] = currentLabel.split("-").map(Number);
+    const previousMonthDate = new Date(year, monthNumber - 2, 1);
+    previousLabel = `${previousMonthDate.getFullYear()}-${String(
+      previousMonthDate.getMonth() + 1,
+    ).padStart(2, "0")}`;
+  } else {
+    const d = new Date(`${latestDate}T00:00:00`);
+    d.setDate(d.getDate() - 1);
+    previousLabel = d.toISOString().slice(0, 10);
+  }
+
+  const currentPeriod = sorted.filter((record) =>
+    period === "month"
+      ? toMonthLabel(record.date) === currentLabel
+      : toDayLabel(record.date) === currentLabel,
+  );
+  const previousPeriod = sorted.filter((record) =>
+    period === "month"
+      ? toMonthLabel(record.date) === previousLabel
+      : toDayLabel(record.date) === previousLabel,
+  );
+
+  if (previousPeriod.length === 0) {
+    return {
+      trends: empty,
+      trendLabel: period === "month" ? "vs previous month" : "vs previous day",
+    };
+  }
+
+  const currentMetrics = computeOverviewMetrics(currentPeriod);
+  const previousMetrics = computeOverviewMetrics(previousPeriod);
+
+  return {
+    trends: {
+      totalFeedbacks: percentageDelta(
+        currentMetrics.totalFeedbacks,
+        previousMetrics.totalFeedbacks,
+      ),
+      averageRating: percentageDelta(currentMetrics.averageRating, previousMetrics.averageRating),
+      positivePercentage: percentageDelta(
+        currentMetrics.positivePercentage,
+        previousMetrics.positivePercentage,
+      ),
+      negativePercentage: percentageDelta(
+        currentMetrics.negativePercentage,
+        previousMetrics.negativePercentage,
+      ),
+      totalComplaints: percentageDelta(
+        currentMetrics.totalComplaints,
+        previousMetrics.totalComplaints,
+      ),
+      activeDepartments: percentageDelta(
+        currentMetrics.activeDepartments,
+        previousMetrics.activeDepartments,
+      ),
+    },
+    trendLabel: period === "month" ? "vs previous month" : "vs previous day",
+  };
 }

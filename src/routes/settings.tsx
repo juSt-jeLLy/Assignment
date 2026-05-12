@@ -5,12 +5,8 @@ import { useTheme, type Theme } from "@/features/theme/ThemeProvider";
 import {
   useNotifyNewComplaints,
   useNotifyLowRatings,
-  useNotifyWeeklyDigest,
-  useNotifyMilestones,
   useSetNotifyNewComplaints,
   useSetNotifyLowRatings,
-  useSetNotifyWeeklyDigest,
-  useSetNotifyMilestones,
 } from "@/store";
 import { cn } from "@/lib/utils";
 
@@ -46,12 +42,8 @@ function SettingsPage() {
   // ── Zustand — preferences persist across navigation & page refresh ───
   const notifyNewComplaints = useNotifyNewComplaints();
   const notifyLowRatings = useNotifyLowRatings();
-  const notifyWeeklyDigest = useNotifyWeeklyDigest();
-  const notifyMilestones = useNotifyMilestones();
   const setNotifyNewComplaints = useSetNotifyNewComplaints();
   const setNotifyLowRatings = useSetNotifyLowRatings();
-  const setNotifyWeeklyDigest = useSetNotifyWeeklyDigest();
-  const setNotifyMilestones = useSetNotifyMilestones();
   // ─────────────────────────────────────────────────────────────────────
 
   return (
@@ -116,7 +108,7 @@ function SettingsPage() {
         <SectionHeader
           icon={Bell}
           title="Notifications"
-          description="Choose what you want to be alerted about."
+          description="Choose which real-time Supabase notifications appear in the app."
         />
         <div className="mt-5 space-y-3">
           <Toggle
@@ -125,19 +117,9 @@ function SettingsPage() {
             onChange={setNotifyNewComplaints}
           />
           <Toggle
-            label="Critically low ratings"
+            label="New feedback alerts"
             checked={notifyLowRatings}
             onChange={setNotifyLowRatings}
-          />
-          <Toggle
-            label="Weekly digest email"
-            checked={notifyWeeklyDigest}
-            onChange={setNotifyWeeklyDigest}
-          />
-          <Toggle
-            label="Department milestone updates"
-            checked={notifyMilestones}
-            onChange={setNotifyMilestones}
           />
         </div>
       </motion.div>
