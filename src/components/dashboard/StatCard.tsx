@@ -46,9 +46,7 @@ export function StatCard({
       />
       <div className="relative flex items-start justify-between">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {label}
-          </p>
+          <p className="text-ui-label text-xs font-semibold uppercase tracking-[0.08em]">{label}</p>
           <p className="mt-2 text-3xl font-bold tracking-tight">{value}</p>
         </div>
         <div

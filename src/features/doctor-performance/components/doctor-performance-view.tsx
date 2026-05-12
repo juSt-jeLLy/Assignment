@@ -75,7 +75,7 @@ export function DoctorPerformanceView(): React.JSX.Element {
       </div>
       <section className="grid grid-cols-1 gap-3 rounded-2xl border border-border bg-card p-4 md:grid-cols-2">
         <label className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-muted-foreground">Search</span>
+          <span className="text-ui-label text-xs font-semibold tracking-wide">Search</span>
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
@@ -92,13 +92,13 @@ export function DoctorPerformanceView(): React.JSX.Element {
       </section>
       <div className="overflow-x-auto rounded-2xl border border-border bg-card">
         <table className="min-w-full text-sm">
-          <thead className="bg-muted/70">
+          <thead className="bg-ui-label-soft">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="border-b border-border px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground"
+                    className="text-ui-label border-b border-border px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em]"
                   >
                     <button
                       type="button"

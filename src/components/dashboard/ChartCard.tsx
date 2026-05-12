@@ -32,7 +32,7 @@ export function ChartCard({
             initial={{ opacity: 0.7, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: delay + 0.08 }}
-            className="text-lg font-semibold tracking-tight text-foreground"
+            className="text-heading-gradient text-xl font-semibold tracking-tight"
           >
             {title}
           </motion.h3>

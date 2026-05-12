@@ -17,7 +17,7 @@ export function ExportCsvButton<T extends object>({
     <button
       type="button"
       onClick={() => downloadCsv(fileName, rows)}
-      className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium hover:bg-accent"
+      className="ui-export-btn inline-flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm font-semibold transition-smooth"
     >
       <Download className="h-4 w-4" />
       {label}
